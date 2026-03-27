@@ -29,12 +29,43 @@ void BubbleSort(std::vecotr<T>& array){
 }
 ```
 #### Insertion Sort
-
+Gli elementi vengono inseriti in un sotto array ordinato<br>
+Complessità O(n<sup>2</sup>)
 ```C++
 #include <vector>
 
 template<typename T>
-void InsertionSort(std::vector <T>){
+void BinaryInsertionSort(std::vector<T>& array) {
+    int l = array.size();
+
+    for(int i = 1; i < l; i++) {
+        T key = array[i];
+
+        int left = 0;
+        int right = i - 1;
+        
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            
+            if (array[mid] > key) {
+                //Se l'elemento centrale è più grande, cerchiamo nella metà sinistra
+                right = mid - 1;
+            } else {
+                //Altrimenti cerchiamo nella metà destra
+                left = mid + 1;
+            }
+        }
+        
+        //Alla fine di questo ciclo, 'left' conterrà l'indice esatto 
+        //in cui la nostra 'key' deve essere inserita.
+
+        // Spostiamo tutti gli elementi da 'left' a 'i-1' di una posizione verso destra
+        for (int j = i; j > left; j--) {
+            array[j] = array[j - 1];
+        }
+
+        array[left] = key;
+    }
 }
 
 ```
