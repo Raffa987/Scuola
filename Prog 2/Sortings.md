@@ -31,6 +31,11 @@ void BubbleSort(std::vecotr<T>& array){
 #### Insertion Sort
 
 ```C++
+#include <vector>
+
+template<typename T>
+void InsertionSort(std::vector <T>){
+}
 
 ```
 
