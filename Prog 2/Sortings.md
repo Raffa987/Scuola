@@ -2,8 +2,8 @@
 Per la preview `Ctrl+Shift+V`<br>
 Tutti gli ordinamenti verrano fatti in ordne crescente
 #### Bubble Sort
+Gli elementi "salgono" alla posizione corretta come fossero bolle
 ```C++
-//Gli elementi "salgono" alla posizione corretta come fossero bolle
 #include <vector>
 
 template<typename T>
@@ -40,10 +40,9 @@ void InsertionSort(std::vector <T>){
 ```
 
 #### Selection Sort
-
+Seleziona l'elemnto minimo nell'array e lo mette al primo posto<br>
+Il secondo elemento più piccolo al secono posto...
 ```C++
-//Seleziona l'elemnto minimo nell'array e lo mette al primo posto
-//Il secondo elemento più piccolo al secono posto...
 #include <vecotr>
 
 template <typename T>
