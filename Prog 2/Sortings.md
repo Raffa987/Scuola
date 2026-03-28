@@ -159,6 +159,47 @@ void MergeSort(std::vector <T>& array){
 ---
 #### Quick Sort
 Il  Quicksort  è  l’algoritmo  di  ordinamento  più  efficiente.  Si  basa sulla divisione del vettore in tre partizioni: <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    • Centrale: contenente un solo elemento detto pivot<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    • Sinistra: contenente tutti gli elementi minori del pivot<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    • Destra: contenente tutti gli elementi maggiori del pivot<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Centrale: contenente un solo elemento detto pivot<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2• Sinistra: contenente tutti gli elementi minori del pivot<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Destra: contenente tutti gli elementi maggiori del pivot<br>
+Usa il partizionamento di Hoare
+
+```C++
+#include <vector>
+
+template <typename T>
+void QuickSort(std::vector <T>& array, int n){
+    QuickSort(array, 0, n - 1);
+}
+template <typename T>
+void QuickSort(std::vector <T>& v, int s, int d){
+    //s = sinistra, d = destra
+    int i = s, j = d;
+    T tmp;
+    //scegliamo l'elemento a metà come Pivot
+    T pivot = v[(s + d) / 2];
+
+    //il ciclo continuerà fino a quando gli indici non arrivano al Pivot
+    while(i <= j){
+        //i aumenta fino a quando non incontar un elemento più grande del Pivot
+        while(v[i] < pivot) i++;
+        //j aumenta fino a quando non incontar un elemento più piccolo del Pivot
+        while(v[j] > pivot) j--;
+
+        //se i e j non si sono ancora incontrati vengono scambiati di posto gli elementi
+        //da loro indicati
+        if (i <= j) {
+            tmp = v[i];
+            v[i] = v[j];
+            v[j] = tmp;
+            i++;
+            j--;
+        }
+    }
+
+    if(s < j)
+    QuickSort(v, s, j);
+    if(i < d)
+    QuickSort(v, i, d);
+}
+```
