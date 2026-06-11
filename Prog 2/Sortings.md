@@ -160,7 +160,7 @@ void MergeSort(std::vector <T>& array){
 #### Quick Sort
 Il  Quicksort  è  l’algoritmo  di  ordinamento  più  efficiente.  Si  basa sulla divisione del vettore in tre partizioni: <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Centrale: contenente un solo elemento detto pivot<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2• Sinistra: contenente tutti gli elementi minori del pivot<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Sinistra: contenente tutti gli elementi minori del pivot<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Destra: contenente tutti gli elementi maggiori del pivot<br>
 Usa il partizionamento di Hoare
 
