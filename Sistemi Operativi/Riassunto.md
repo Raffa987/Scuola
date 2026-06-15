@@ -153,3 +153,82 @@ int close(int fd);
 Chiude un file descriptor. Restituisce `0` se ha successo e `-1` aggiornando `errno` in caso di errore.
 
 ## Permessi sugli oggetti del File-System UNIX
+Nei metadati del file(all'interno dell'inode) il sistema riserva un intero per memorizzare varie informazioni. Gli ultimi 9 bit sono dedicati ai permessi. 
+Un bit `1` signfica "permesso accordato" e un bit a `0` vuol dire "permesso negato".
+Questi 9 bit sono suddivi in 3 blocchi da 3 bit ciascuno(`R`, `W`, `X`; read, write e execute):
+- permessi utente proprietario(USR)
+- permessi gruppo proprietario(GRP)
+- permessi per gli altri utenti(OTH)
+
+Quindi, un file con tutti i permessi avrà gli ultimi 9 bit dell'inode messi a `111 111 111` in binario o 0777 in rappresentazione ottale. 
+Il comando per impostare i permessi è `chmod`. Es. `chmod 0777`.
+
+Questa maschera si può ottenere da costanti definite in `sys/stat.h`
+<table border="1" style="border-collapse: collapse; text-align: left; width: 100%;">
+  <thead>
+    <tr>
+      <th style="padding: 8px;">Flag</th>
+      <th style="padding: 8px;">Ottale</th>
+      <th style="padding: 8px;">Permesso</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 8px;">S_IRUSR</td>
+      <td style="padding: 8px;">00400</td>
+      <td style="padding: 8px;">owner has read permission</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px;">S_IWUSR</td>
+      <td style="padding: 8px;">00200</td>
+      <td style="padding: 8px;">owner has write permission</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px;">S_IXUSR</td>
+      <td style="padding: 8px;">00100</td>
+      <td style="padding: 8px;">owner has execute permission</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px;"></td>
+      <td style="padding: 8px;"></td>
+      <td style="padding: 8px;"></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px;">S_IRGRP</td>
+      <td style="padding: 8px;">00040</td>
+      <td style="padding: 8px;">group has read permission</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px;">S_IWGRP</td>
+      <td style="padding: 8px;">00020</td>
+      <td style="padding: 8px;">group has write permission</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px;">S_IXGRP</td>
+      <td style="padding: 8px;">00010</td>
+      <td style="padding: 8px;">group has execute permission</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px;"></td>
+      <td style="padding: 8px;"></td>
+      <td style="padding: 8px;"></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px;">S_IROTH</td>
+      <td style="padding: 8px;">00004</td>
+      <td style="padding: 8px;">others have read permission</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px;">S_IWOTH</td>
+      <td style="padding: 8px;">00002</td>
+      <td style="padding: 8px;">others have write permission</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px;">S_IXOTH</td>
+      <td style="padding: 8px;">00001</td>
+      <td style="padding: 8px;">others have execute permission</td>
+    </tr>    
+  </tbody>
+</table>
+
+Per le directory `X` rappresenta il diritto di attraversamento.
