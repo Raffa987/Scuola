@@ -325,3 +325,34 @@ La System-Wide Open File Table è la tabella globale del kernel2. Ogni sua voce 
 Infine, il v-node contiene a sua volta il puntatore decisivo all'i-node, ovvero la struttura fisica sul disco con i dati reali del file.
 
 > Il sistema di gestione dei file in UNIX non è altro che un colossale grafo di strutture dati in C collegate tra loro. Dal PCB del processo in memoria RAM, passando per le tabelle globali del kernel, fino ad arrivare all'i-node fisico sul disco rigido, l'intero sistema si regge su una complessa e precisissima rete di puntatori. È questa architettura a rendere il kernel così veloce.
+
+## Istruzioni atomiche 
+
+#### Problema 1: Accodamento concorrente (Scenario Multi-Processo)
+Processi indipendenti che aprono lo stesso file ottengono voci separate nella System-Wide Open File Table e, dunque, file offset indipendenti.
+- crittura (Race Condition): Un processo P1 vuole scrivere alla fine di un file di log e usa lseek per trovare la fine. Un attimo prima che possa scrivere, un processo P2 scrive la sua riga. Così facendo, l'offset calcolato da P1 diventa obsoleto e, scrivendo, P1 sovrascriverà i dati appena inseriti da P2.
+
+#### Soluzione 1: flag `O_APPEND`
+Se si apre il file con `O_APPEND`, il posizionamento dell'offset alla fine del file e la succcessiva operazione di scrittura verrano eseguite in modo atomico(inscindibile) dal kernel.
+<br><br>
+
+#### Problema 2: Accesso diretto concorrente (Scenario Multi-Thread)
+Tutti i thread di uno stesso processo condividono la stessa voce nella System-Wide Open File Table e, dunque, condividono lo stesso file offset (il "segnalibro").
+
+- Lettura/Scrittura (Race Condition): Se due thread devono leggere o scrivere in punti diversi del file usando la combinazione `lseek()` + `read()`/`write()`, si sposterebbero l'offset condiviso a vicenda tra un'istruzione e l'altra, leggendo o scrivendo dati errati.
+
+#### Soluzione 2: `pread()` e `pwrite()`
+Le istruzioni atomiche:
+```C
+ssize_t pread(int fd, void *buf, size_t nbytes, off_t offset); 
+ssize_t pwrite(int fd, const void *buf, size_t nbytes, off_t offset);
+```
+
+Hanno lo stesso scopo di `read()` e `write()`, ma a differenza loro, `pread()` e `pwrite()`: 
+- Eseguono il posizionamento dell'offset e la lettura/scrittura in modo atomico, evitando le race conditions.
+- Non modificano il file offset condiviso globale (usano l'offset passato come parametro solo per quella singola operazione).
+
+## Duplicazione dei descrittori dei file
+### La funzione `dup()`
+
+### La funzione `dup2()`
