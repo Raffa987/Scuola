@@ -232,3 +232,44 @@ Questa maschera si può ottenere da costanti definite in `sys/stat.h`
 </table>
 
 Per le directory `X` rappresenta il diritto di attraversamento.
+
+## Maschera di Creazione per i Permessi
+Per ragioni di sicurezza quando un file(o una directory) viene creato la maschera(dei permessi) specificata viene combinata da una maschera di creazione che inibisce globalmente alcuni permessi.
+La maschera dei permessi effettiva è data da: <br>
+`effettiva = specificata & (~umask)`<br>
+
+dove 
+
+```c
+mode_t umask(mode_t cmask);
+```
+
+L'espressione inibisce i permessi di `umask` messi a 1 lasciando gli altri intatti.
+
+Se la directory padre in cui si sta creando il file ha una ACL di default(Access Control List), ovvero una maschera dei permessi, la `umask` del processo chiamante viene ignorata, il nuovo file eredita l'ACL del padre e i permessi effettivi vengono calcolati basandosi sull'ACL ereditata, incrociata con la maschera specificata dal chiamante.
+
+
+## Posizionamento 
+All'interno della System-Wide Open File Table vi è una voce che contiene la posizione attuale all'interno del file(offset), questo serve a simulare l'accesso sequenziale. Viene posto a `0` se durante la chiamata `open()` non si usa il flag `O_APPEND` e viene aggiornato dopo ogni operazione.
+
+```C
+off_t lseek(int fd, off_t offset, int whence);
+```
+Permette di spostare l'offset di un numero di bytes pari al parametro `offset` rispetto al punto `whence` che può assumere i seguenti valori:
+- `SEEK_SET`: L'offset è posizionato a `offset` bytes
+- `SEEK_CUR`: L'offset è posizionato alla posizione corrente più `offset` bytes
+- `SEEK_END`: L' offset è posizionato alla dimensione del file(fine) più `offset` bytes<br>
+
+Dalla versione del Kernel Linux 3.1 supporta anche le seguenti modalità:
+- `SEEK_DATA`
+- `SEEK_HOLE`<br>
+
+`lseek()` permette di posizionare l'offset oltre la fine del file(questo però non ne cambierà la dimensione).Tuttavia, se si effettua una successiva operazione di `write()`, lo spazio tra la vecchia fine del file e il nuovo testo verrà riempito di byte nulli (`\0`), creando un  file hole. Questi buchi occupano spazio logico ma non consumano necessariamente blocchi fisici sul disco.
+
+ La funzione`lseek()` ritorna `-1` in caso di errore o la nuova posizione all'intenro del file (`≥0`).
+ Per ottenere la posizione attuale basta fare:
+ ```C
+ pos = lseek(fd, 0, SEEK_CUR);
+ ```
+
+ ## Lettura e Scrittura
