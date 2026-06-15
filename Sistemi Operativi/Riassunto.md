@@ -273,3 +273,29 @@ Dalla versione del Kernel Linux 3.1 supporta anche le seguenti modalità:
  ```
 
  ## Lettura e Scrittura
+
+ ### La funzione `read()`
+ ```C
+ssize_t read(int fd, void *buf, size_t nbytes);
+ ```
+
+Cerca di leggere fina a un numero `nbytes` di bytes, dal File Descriptor `fd`, mettendoli nel buffer  `buf`.
+
+Nei File che supportano seeking la lettura inizia dall'offset indicato nella System-Wide Open File Table, e l'offset verrà spostato del numero di byte letti. Se l'offset è alla fine del file o oltre non verranno letti bytes e `read()` restituisce `0`. In caso di successo la funzione restituisce il numero di bytes letto e in caso di errore resituisce `-1` aggiornando `errno`, in questo caso non è specificato se la posizione all'interno file(se esiste) cambi.
+
+> **Differenza tra size_t e ssize:t**
+> * **`size_t`**: Intero **senza segno** (*unsigned*). Usato per i parametri di input (come `nbytes`) dove il valore deve essere sempre positivo.
+> * **`ssize_t`**: Intero **con segno** (*signed*). Usato per il valore di ritorno perché deve poter restituire `-1` in caso di errore.
+
+
+### La funzione `write()`
+```C
+ssize_t write(int fd, const void *buf, size_t nbytes);
+```
+Scrive fino a `nbytes` byte nel file descriptor `fd` leggendoli dal buffer `buf`.
+Il numero di byte scritti può essere minore di quello indicato in `nbytes`se, per esempio, non c'è spazio sufficiente nel supporto fisico, o se incontra il limite di risorsa `RLIMIT_FSIZE`, o se la chiamata è stata interrotta da un segnale dopo aver scritto meno di `nbytes` byte.
+
+Se il file supporta il seeking, la scrittura inizia dall'offset indicato nella System-Wide Open File Table, e l'offset verrà spostato del numero di byte scritti. Se il file è stato aperto con il flag `O_APPEND` l'offset verrà spostato alla fine del file prima di iniziare a scrivere. Il posizionamento dell'offset del file e l'operazione di scrittura verrano eseguite in modo atomico(inscindibile) dal kernel.
+
+
+La funzione ritorna il numero di byte scritti. In caso di errore ritorna `-1` e aggiorna `errno`.
