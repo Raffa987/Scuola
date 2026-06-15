@@ -299,3 +299,29 @@ Se il file supporta il seeking, la scrittura inizia dall'offset indicato nella S
 
 
 La funzione ritorna il numero di byte scritti. In caso di errore ritorna `-1` e aggiorna `errno`.
+
+## Condivisione di Files e strutture dati di supporto
+
+![alt text](image.png)
+
+Quando si avvia un nuovo processo, il kernel alloca in memoria un nuovo PCB (Process Control Block), che contiene attributi fondamentali come il `PID` (Process ID), la umask e l'array dei File Descriptor (Per-Process File Descriptor Table).
+
+All'avvio, le prime tre voci di questa tabella locale sono già occupate dai canali standard: `stdin` (0), `stdout` (1) e `stderr` (2).
+
+Ogni voce (File Descriptor) all'interno di questa tabella contiene:
+
+1. I flag locali del descrittore (es. close-on-exec).
+
+2. Un puntatore a una voce della System-Wide Open File Table.
+
+La System-Wide Open File Table è la tabella globale del kernel2. Ogni sua voce contiene:
+
+- Metadati di stato: come l'offset corrente e i flag di stato (es. O_RDONLY).
+
+- Reference Count: un contatore che indica quanti File Descriptor puntano attualmente a questa voce.
+
+- Puntatore al v-node: un riferimento all'astrazione del file system.
+
+Infine, il v-node contiene a sua volta il puntatore decisivo all'i-node, ovvero la struttura fisica sul disco con i dati reali del file.
+
+> Il sistema di gestione dei file in UNIX non è altro che un colossale grafo di strutture dati in C collegate tra loro. Dal PCB del processo in memoria RAM, passando per le tabelle globali del kernel, fino ad arrivare all'i-node fisico sul disco rigido, l'intero sistema si regge su una complessa e precisissima rete di puntatori. È questa architettura a rendere il kernel così veloce.
