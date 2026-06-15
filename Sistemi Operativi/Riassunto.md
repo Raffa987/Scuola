@@ -354,5 +354,27 @@ Hanno lo stesso scopo di `read()` e `write()`, ma a differenza loro, `pread()` e
 
 ## Duplicazione dei descrittori dei file
 ### La funzione `dup()`
+```C
+int dup(int oldfd);
+```
+La funzione alloca un nuovo file descriptor (descrittore di file) che fa riferimento alla stessa descrizione del file aperto (nella System-Wide Open File Table) a cui punta oldfd.
 
+- Il nuovo file descriptor sarà il più basso numero libero disponibile nella tabella dei file del processo chiamante (PCB).
+
+- Il vecchio e il nuovo file descriptor possono essere usati in maniera intercambiabile: condividono il file offset e i flag di stato del file (es. O_APPEND, O_RDONLY).
+
+- I due file descriptor avranno flag del file descriptor diverse (in particolare, il flag FD_CLOEXEC nel nuovo descrittore viene disattivato di default).
 ### La funzione `dup2()`
+```C 
+int dup2(int oldfd, int newfd);
+```
+`dup2()` esegue lo stesso compito di `dup()`, ma anziché usare il primo numero libero, impone al sistema di usare il numero esatto indicato nel parametro newfd.
+- Se `newfd` era già aperto prima della chiamata a `dup2()`, quel file verrà chiuso prima di essere riutilizzato (la chiusura avviene in automatico e in modo silenzioso).
+
+- Gli step di chiusura di `newfd` e la successiva duplicazione vengono eseguiti in maniera atomica. Questo evita race condition in scenari multi-thread.
+
+Casi limite da esame su `dup2()`:
+
+- Se `oldfd` non è valido la chiamata fallisce e `newfd` non viene chiuso.
+
+- Se `oldfd` è uguale a `newfd` la funzione `dup2()` non fa assolutamente nulla (non chiude il file) e restituisce semplicemente `newfd`.
