@@ -482,3 +482,5 @@ struct stat {
   #define st_ctime  st_ctim.tv_sec
 };
 ```
+[Esempio del Prof](./Esempi/stat.c)<br>
+[Mio Esempio](./Esempi/my_stat.c)
