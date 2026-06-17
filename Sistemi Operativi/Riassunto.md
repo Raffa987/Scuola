@@ -3,6 +3,8 @@ Nei moderni sistemi operativi possiamo fare due tipi di chiamate:<br>
 - **chiamate di sistema**: offerte dal sistema operativo(**modalità kernel**)<br>
 - **chiamate di libreria**: funzioni incluse in librerie di sistema(**modalità utente**) 
 
+> [Libreria del professore](./Esempi/at_exit.c)
+
 ## Layout della memoria
  Quando un programma viene avviato, il sistema operativo gli assegna uno spazio di memoria suddiviso in segmenti specifici. Comprendere questa divisione è fondamentale per capire dove "vivono" le tue variabili.
 
@@ -64,7 +66,8 @@ Un processo può terminare in vari modi (es. arrivando alla fine del main). Tutt
 
     - `>0` (o la costante `EXIT_FAILURE`): Il programma è terminato a causa di un errore.
 
--  Terminazione "Pulita": Quando chiami `exit()`, il sistema non "uccide" brutalmente il programma, ma prima scrive i buffer di memoria rimasti in sospeso e avvia eventuali procedure di chiusura che hai registrato tramite la funzione `atexit()`.
+-  Terminazione "Pulita": Quando chiami `exit()`, il sistema non "uccide" brutalmente il programma, ma prima scrive i buffer di memoria rimasti in sospeso e avvia eventuali procedure di chiusura che hai registrato tramite la funzione `atexit()`.<br>
+[Esempio](./Esempi/at_exit.c)
 
 ## Descrittori dei File
 In UNIX/Linux, tutto è considerato un file (hardware, terminali, file di testo, connessioni di rete). Per gestire questi "file", il sistema operativo usa i File Descriptors.
@@ -246,7 +249,9 @@ mode_t umask(mode_t cmask);
 
 L'espressione inibisce i permessi di `umask` messi a 1 lasciando gli altri intatti.
 
-Se la directory padre in cui si sta creando il file ha una ACL di default(Access Control List), ovvero una maschera dei permessi, la `umask` del processo chiamante viene ignorata, il nuovo file eredita l'ACL del padre e i permessi effettivi vengono calcolati basandosi sull'ACL ereditata, incrociata con la maschera specificata dal chiamante.
+Se la directory padre in cui si sta creando il file ha una ACL di default(Access Control List), ovvero una maschera dei permessi, la `umask` del processo chiamante viene ignorata, il nuovo file eredita l'ACL del padre e i permessi effettivi vengono calcolati basandosi sull'ACL ereditata, incrociata con la maschera specificata dal chiamante.<br>
+[Esempio Prof](./Esempi/creation-mask.c)<br>
+[Mio Esempio](./Esempi/my_creation-mask.c)
 
 
 ## Posizionamento 
