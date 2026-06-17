@@ -276,6 +276,7 @@ Dalla versione del Kernel Linux 3.1 supporta anche le seguenti modalità:
  ```C
  pos = lseek(fd, 0, SEEK_CUR);
  ```
+ [Esempio Prof](./Esempi/test-seek-on-stdin.c)
 
  ## Lettura e Scrittura
 
@@ -304,6 +305,10 @@ Se il file supporta il seeking, la scrittura inizia dall'offset indicato nella S
 
 
 La funzione ritorna il numero di byte scritti. In caso di errore ritorna `-1` e aggiorna `errno`.
+
+[Esempio Lettura Prof](./Esempi/count.c)<br>
+[Esempio di scrittura con holes del Prof](./Esempi/hole.c)<br>
+[Esempio del Prof con read e write](./Esempi/copy.c)
 
 ## Condivisione di Files e strutture dati di supporto
 
@@ -384,6 +389,8 @@ Casi limite da esame su `dup2()`:
 
 - Se `oldfd` è uguale a `newfd` la funzione `dup2()` non fa assolutamente nulla (non chiude il file) e restituisce semplicemente `newfd`.
 
+[Esempio del Prof](./Esempi/redirect.c)
+
 ## Cache del Disco
 Per evitare che il sistema rallenti in attesa della scrittura fisica dei dati sul disco, viene impiegata una tecnica nota come "write-back cache", o cache a scrittura differita. Quando un programma salva un file, il Sistema Operativo non trasferisce immediatamente le informazioni sul supporto permanente, ma le scrive in una porzione di RAM libera chiamata "page cache", segnalando all'applicazione che l'operazione è già conclusa. Le porzioni di memoria così modificate, ma non ancora salvate fisicamente, prendono il nome di "dirty pages". L'effettivo trasferimento dei dati viene ritardato per ragioni di efficienza e gestito in background dal sistema, che periodicamente, in genere entro un limite massimo di trenta secondi, forza lo scaricamento di queste informazioni dalla RAM al supporto fisico. Sebbene questo approccio velocizzi notevolmente le operazioni, comporta dei rischi intrinseci dovuti alla natura volatile della RAM: in caso di interruzione improvvisa di corrente o di un crash di sistema prima che le scritture vengano completate, tutti i dati temporaneamente parcheggiati nella cache andranno irrimediabilmente persi, con il rischio aggiuntivo di corrompere le strutture logiche del disco se il blocco avviene esattamente durante la fase di trasferimento. Per arginare questi pericoli, le architetture moderne utilizzano file system dotati di Journaling (come NTFS o ext4), progettati per tenere un registro delle operazioni imminenti e facilitare il ripristino in caso di anomalie, mentre per le transazioni di dati assolutamente critiche esistono chiamate di sistema, che consentono di bypassare il ritardo di accodamento e imporre la scrittura immediata e sicura sul disco:
 
@@ -397,7 +404,8 @@ Per evitare che il sistema rallenti in attesa della scrittura fisica dei dati su
   ```C
   int fsync(int fd);
   ```
-  forza tutte le informazioni in memoria che aggiornino i file systems a venire scritte sul disco
+  forza tutte le informazioni in memoria che aggiornino i file systems a venire scritte sul disco.
+  Esiste un comando omonimo per shell `sync`.
 
 
 ## I/O Buffering
@@ -408,4 +416,28 @@ Gli schemi per il buffering definiti nello standard del C sono:
 
 Lo standard ISO C fornisce una libreria per l'I/O bufferizzato basato su stream aggiungendo un tipo `FILE *` e degli stream predefiniti `stdin`, `stdout` e `stderr`
 
-È sempre possibile forzare scritture pendenti nel buffer con fflush.
+È sempre possibile forzare scritture pendenti nel buffer con `fflush`.
+
+## Streams in C (`stdio.h`)
+
+La libreria standard del C **`stdio.h`** introduce gli stream attraverso il tipo puntatore `FILE *`. 
+
+Lo stream è una potente astrazione pensata per ridurre al minimo le costose chiamate al kernel (System Call) e il conseguente *Context Switch*. A differenza del File Descriptor (che è un semplice numero intero gestito dal kernel), uno stream è una struttura dati complessa (`struct FILE`) che risiede nello spazio di memoria del programma (*User Space*).
+
+**Il Buffering:**
+Gli stream creano una zona di memoria temporanea detta **buffer**. Le operazioni di lettura e scrittura avvengono prima su questo buffer per abbattere il numero di accessi reali al disco/dispositivo. Solo quando il buffer è pieno (o viene forzato lo svuotamento), lo stream effettua una singola System Call (es. `write` o `read`) per comunicare in blocco con il kernel.
+
+### Funzioni Principali
+
+- **`fopen`**: Apre un file interfacciandosi col kernel per il File Descriptor, alloca la memoria necessaria per la `struct FILE` (incluso il buffer) e restituisce lo stream.
+- **`fdopen`**: Simile a `fopen`, ma crea e aggancia uno stream (e il relativo buffer) a un *File Descriptor* già aperto in precedenza a basso livello.
+- **`fclose`**: Chiude lo stream. Prima di farlo, esegue un *flush* automatico (forza la scrittura sul disco di eventuali dati rimasti nel buffer temporaneo), per poi chiudere il File Descriptor associato.
+- **`fgetc`**: Legge un singolo carattere dallo stream. Restituisce un `int` (non un `char`) per poter segnalare correttamente la macro `EOF` (End Of File, solitamente `-1`) in caso di termine o errore.
+- **`fputc`**: Scrive un singolo carattere sullo stream.
+- **`fgets`**: Legge una riga dallo stream (I/O testuale) e la salva come stringa in un buffer grande al massimo `n` byte. *Nota:* Salva anche il carattere di a capo `\n` letto e aggiunge automaticamente il terminatore di stringa `\0`.
+- **`fputs`**: Scrive una stringa sullo stream.
+- **`fread` e `fwrite`**: Gestiscono l'**I/O binario**. Rispettivamente, leggono e scrivono `nobj` record, ciascuno di dimensione `size` byte, da/verso lo stream. Sono perfette per leggere/scrivere blocchi di memoria esatti (come intere `struct`).
+- **`fseek` e `fseeko`**: Spostano il *file offset* (la testina di lettura/scrittura) all'interno dello stream, basandosi su tre "ancore" di riferimento:
+  - `SEEK_SET`: Spostamento a partire dall'inizio del file.
+  - `SEEK_CUR`: Spostamento a partire dalla posizione corrente.
+  - `SEEK_END`: Spostamento a partire dalla fine del file.
