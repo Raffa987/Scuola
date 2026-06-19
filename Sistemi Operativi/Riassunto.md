@@ -483,4 +483,60 @@ struct stat {
 };
 ```
 [Esempio del Prof](./Esempi/stat.c)<br>
-[Mio Esempio](./Esempi/my_stat.c)
+
+## Directory
+
+```C
+int mkdir (const char *path, mode_t mode); 
+```
+Crea una nuova directory con nome `path`, e maschera dei permessi `mode`(verrà sempre applicata **umask**).
+In caso di errore ritornerà `-1`, altrimenti `0`.
+```C
+int rmdir(const char *path);
+```
+
+Cancella una directory con nome `path` la directory deve essere vuota. La funzione ritornerà `-1` in caso di errore, altrimenti `0`.
+
+```C
+int chdir(const char *path);
+```
+La directory il cui pathname è puntato da `path` diventa la nuova **current working directory** del processo chiamante. In caso di errore restituirà `-1` altrimenti `0`.
+
+```C
+char *getcwd(char *buf, size_t size);
+```
+Restituisce una null-terminated string contenente il percorso assoluto della **current working directory** del processo chiamante. Il percorso viene restituito come risultato della funzione e tramite l'argomento buf, se presente. In caso di errore la funzione ritorna `NULL`.
+
+### Funzioni della libreria `dirent.h`
+```C
+DIR *opendir(const char *name); 
+```
+La funzione apre un **Directory stream** corrispondente alla directory `name` e ritorna un puntatore al directory stream.. Lo stream punta alla prima voce della directory.
+```C
+struct dirent *readdir(DIR *dirp);
+```
+La funzione `readdir()` legge la directory puntata da `dirp` e restituisce un puntatore a una struct dirent che descrive il prossimo elemento (file o sottocartella) in essa contenuto. Ritorna `NULL` se sono stati letti tutti gli elementi o se si verifica un errore.
+
+La `struct dirent` è definita nel seguente modo:
+
+```C
+struct dirent {
+  ino_t          d_ino;       /* Inode number */
+  off_t          d_off;       /* Not an offset; see below */
+  unsigned short d_reclen;    /* Length of this record */
+  unsigned char  d_type;      /* Type of file; not supported by all filesystem types */
+  char           d_name[256]; /* Null-terminated filename */        
+};
+```
+
+```C
+void rewinddir(DIR *dp); 
+long telldir(DIR *dp); 
+void seekdir(DIR *dp, long loc); 
+int closedir(DIR *dp);
+```
+Servono in ordine per:
+- sposta la posizione del directory stream `dp` all'inizio della directory
+- ritorna la posizione assciata a `dp`
+- imposta la posizione nel directory stream da cui inizierà la successiva chiamata a `readdir`. L'argomento `loc` deve essere un valore restituito da una precedente chiamata a `telldir`.
+- chiude il directory stream `dp`

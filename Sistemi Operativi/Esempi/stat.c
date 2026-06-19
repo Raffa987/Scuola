@@ -4,8 +4,8 @@
  */
 
 #include "lib-misc.h"
-#include <grp.h>
-#include <pwd.h>
+#include <grp.h>// per struct group
+#include <pwd.h>// per struct passwd
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -21,10 +21,11 @@ int main(int argc, char *argv[]) {
     mode_t modes;
 
     if (argc < 2)
-        exit_with_err_msg("utilizzo: %s <pathname>\n", argv[0]);
+        exit_with_err_msg("utilizzo: %s <pathname>\n", argv[0]);\
+        // Controllo correttezza comando da shell
 
     // raccoglie le informazioni sull'oggetto
-    if (lstat(argv[1], &statbuf) == -1)
+    if (lstat(argv[1], &statbuf) == -1)// mette nella struct
         exit_with_sys_err(argv[1]);
 
     // prende il nome del proprietario
@@ -55,7 +56,7 @@ int main(int argc, char *argv[]) {
         type = "--indefinito (!?!)--";
 
     // stampa alcune informazioni
-    printf("filename: %s\n", argv[1]);
+    printf("filename: %s\n", argv[1]); //<-non sarebbe più giusto mettere pathname?
     printf("permissions: %o\n", modes & 0777);
     printf("type: %s\n", type);
     printf("size: %lu\n", statbuf.st_size);
