@@ -540,3 +540,109 @@ Servono in ordine per:
 - ritorna la posizione assciata a `dp`
 - imposta la posizione nel directory stream da cui inizierà la successiva chiamata a `readdir`. L'argomento `loc` deve essere un valore restituito da una precedente chiamata a `telldir`.
 - chiude il directory stream `dp`
+[Esempio del Prof](./Esempi/list-dir.c)
+
+## Link simbolici, fisici e la loro gestione
+
+### Link fisici(Hard Link)
+Un hard link è un nome aggiuntivo che punta allo stesso inode del file originale.
+Creando un hard link il Link Count dell'inode da esso puntato aumenterà. Un hard link è indistinguibile dal file "originale".
+Non attraversano i file systems e non possono puntare a una directory fatta eccezione di `.` e `..` che punatno alla ripsettivamente alla directory corrente e alla direcotry padre.
+
+
+### Link simbolici(Symlink)
+A differenza di un link fisico, i symlink, puntano a un percorso testuale. Quando si prova ad aprire un link simbolico il kernel legge direttamente la stringa di percorso e reindirizza l'operazione verso il file puntato dal link.
+Se si dovesse eliminare il file puntato da un symlink si crea un dangling link, che puntaerà a un file inesistente e darà errore in caso di tentata apertura.
+I symlink possono essere utilizzati attraverso file systems e possono puntare alle directory
+
+### Come gestirli
+```C
+int link(const char *existingpath, const char *newpath); 
+int unlink(const char *pathname);
+```
+`link` crea un hardlink e `unlink` lo rimuove.
+```C
+int remove(const char *pathname);
+```
+Chiama la funzione `unlink` per i file e `rmdir` per le cartelle vuote.
+```C
+int rename(const char *oldname, const char *newname);
+```
+Rinomina un file o una directory.
+```C
+int symlink(const char *actualpath, const char *sympath);
+```
+Crea un link simbolico.
+```C
+ssize_t readlink(const char*pathname, char *buf, size_t bufsize);
+```
+Legge il percorso indicato da un link simbolico e lo scrive su `buf`. `readlink` non inserisce il carattere nullo`\0` alla fine del percorso.
+
+## Altre operazioni sui file
+```C
+int truncate(const char *path, off_t length); 
+int ftruncate(int fildes, off_t length); 
+int chmod(const char *path, mode_t mode); 
+int chown(const char *path, uid_t owner, gid_t group);
+```
+
+- `truncate` e `ftruncate` troncano un file esistente alla dimensione specificata, può anche aumentare la dimensione dei file
+- `chmod` cambia la maschera dei permessi di un oggetto sul file-system
+- `chown` cambia l'utente proprietario e il gruppo proprietario specificati tramite i rispettivi identificativi numerici
+- su Linux e altri sistemi UNIX (non tutti), solo l'amministratore può usare `chown`
+
+## Mappatura dei File
+La mappatura dei file permette di associare una porzione di un file direttamente allo spazio di memoria virtuale di un processo.
+
+### 1. La funzione `mmap`
+
+```c
+void *mmap(void *addr, size_t len, int prot, int flag, int fd, off_t off);
+```
+La funzione `mmap` mappa una porzione (definita dall'offset `off` e dalla lunghezza `len`) di un file, precedentemente aperto e identificato dal file descriptor `fd`, su un indirizzo di memoria virtuale `addr`, abilitando specifici permessi `prot`.
+
+- `addr`: Se impostato a NULL, lascia al Sistema Operativo il compito di trovare un indirizzo di memoria idoneo.
+
+- `prot`: Definisce i permessi sulle pagine di memoria mappate. Può essere una combinazione di:
+
+- - `PROT_READ` (Lettura)
+
+- - `PROT_WRITE` (Scrittura)
+
+- - `PROT_EXEC` (Esecuzione)
+
+- `flag`: Definisce il comportamento della mappatura:
+
+- - `MAP_SHARED`: Le scritture in memoria vengono applicate direttamente sul file originario e sono visibili e condivise con altri processi.
+
+- - `MAP_PRIVATE`: Le scritture sono private (CoW - Copy on Write). Le modifiche avvengono solo in RAM e non modificano il file su disco (non persistenti).
+
+- Valore di ritorno: Ritorna l'indirizzo di memoria della mappatura in caso di successo, oppure `MAP_FAILED` in caso di errore.
+
+### Le funzioni `msync` e `munmap`
+```C
+
+int msync(void *addr, size_t len, int flag);
+int munmap(void *addr, size_t len);
+```
+
+Sincronizzazione: `msync`
+
+La funzione `msync` forza il Sistema Operativo a scrivere (scaricare) fisicamente su disco le eventuali modifiche in sospeso fatte nell'area di memoria mappata (specificata da addr e len).
+
+- `flag`:
+
+- - `MS_ASYNC`: Richiesta asincrona (il programma non aspetta la fine della scrittura su disco).
+
+- - `MS_SYNC`: Richiesta sincrona e bloccante (il programma attende finché la scrittura su disco non è completata).
+
+Smontaggio: `munmap`
+
+La funzione `munmap` annulla la mappatura del file, liberando la memoria specificata.
+Se la mappatura era condivisa (`MAP_SHARED`), salva le eventuali modifiche su disco prima di chiuderla.
+Gli effetti della chiusura della mappatura (e i relativi salvataggi) vengono comunque applicati in automatico dal sistema alla terminazione del processo.<br>
+[Esempio Copy](./Esempi/mmap-copy.c)<br>
+[Esempio Read](./Esempi/mmap-read.c)<br>
+[Esempio Reverse](./Esempi/mmap-reverse.c)<br>
+[Mio Esempio](./Esempi/my-mmap/my-mmap.c)
+
