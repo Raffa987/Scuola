@@ -646,3 +646,19 @@ Gli effetti della chiusura della mappatura (e i relativi salvataggi) vengono com
 [Esempio Reverse](./Esempi/mmap-reverse.c)<br>
 [Mio Esempio](./Esempi/my-mmap/my-mmap.c)
 
+## Processi
+### Creazione
+```C
+pid_t getpid(void); 
+pid_t getppid(void); 
+```
+
+`getpid` ritorna il process ID(**PID**) del programma chiamante.
+`getppid` ritorna il procces ID del padre del processo chiamante
+
+```C
+pid_t fork(void);
+```
+
+`fork()` crea un nuovo processo duplicando il processo chiamante. Il nuovo processo sarà chiamato processo figlio e il processo chiamante verrà detto processo padre.
+La funzione ritorna il PID del figlio al processo padre e nel figlio ritorna `0`. In caso di errore ritorna `-1`.
