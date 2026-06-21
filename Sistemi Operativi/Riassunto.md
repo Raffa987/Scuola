@@ -671,7 +671,7 @@ Il processo padre e quello figlio condividono le voci della tabella globale dei
 file aperti e quindi i flag di apertura e i file offset.
 ![alt text](image-1.png)
 
-## Coordinameto tra processi
+### Coordinameto tra processi
 
 ```C
 pid_t wait(int *_Nullable wstatus);
@@ -696,3 +696,147 @@ Il valore `options` è un `OR` di zero o più dei seguenti elementi(Il professor
 
 Ritorna `-1` in caso di fallimento, altrimenti il `PID` del figlio.<br>
 [Esempio Prof](./Esempi/multi-fork-with-wait.c)
+
+### Esecuzione
+
+```C
+int execl(const char *pathname, const char *arg0, …, (char *)0); 
+int execv(const char *pathname, char *const argv[]); 
+int execlp(const char *pathname, const char *arg0, …, (char *)0); 
+int execvp(const char *pathname, char *const argv[]);
+```
+La famiglia di funzioni `exec*` esegue il programma specificato da `pathname`, passando una lista di `args` e usando il programma chiamante come ambiente.
+Le varianti della funzioni con `l` passa gli argomenti come parametri della funzione e quindi deve essere terminata con `(char *)0`. 
+Le varianti della funzione con `v` passano gli `args` come un vettore di stringhe che deve essere NULL terminated.
+Le varianti della funzione con `p`,su pathname non assoluti, ricercano l'eseguibile nei percorsi previsti
+nella variabile d'ambiente `PATH`
+
+La funzione ritorna `-1` in caso di errore, altrimenti non ritorna nulla.
+
+[Esempio del Prof](./Esempi/exec.c)<br>
+[Esempio del Prof](./Esempi/nano-shell.c)
+
+-------------------------------------------
+### Eseczione per interpretazione e semplificata
+Nei sistemi operativi di derivazione UNIX, l'esecuzione di programmi non è limitata ai soli file binari compilati. Si possono eseguire file di testo contenenti istruzioni (script) e per invocare comandi esterni dall'interno di un programma C/C++ in modo semplificato.
+#### Esecuzione per Interpretazione (Scripting)
+
+Un file testuale (script) può essere reso eseguibile direttamente dal sistema operativo, comportandosi a tutti gli effetti come un normale programma binario. Affinché questo avvenga, devono essere soddisfatti due requisiti fondamentali:
+- Il Permesso di Esecuzione: Il file deve avere l'apposito flag (permesso) di esecuzione (x) attivo per l'utente, il gruppo o tutti.
+- La direttiva "Shebang" (Prima Riga): Il file deve specificare obbligatoriamente nella prima riga quale programma interprete deve essere utilizzato per leggere ed eseguire le istruzioni successive.Per convenzione Shebang deve iniziare con la sequenza di caratteri #! (chiamata comunemente "shebang" o "hashbang"), seguita dal percorso assoluto dell'interprete e da eventuali argomenti opzionali.
+
+
+Spesso per garantire la portabilità tra diverse distribuzioni UNIX, invece di codificare il percorso assoluto, si usa il comando env per cercare l'interprete nel $PATH di sistema:
+
+Questo meccanismo è gestito direttamente dal kernel del sistema operativo. Quando l'utente (o un altro programma tramite una chiamata exec) tenta di avviare il file testuale:
+
+- Il kernel controlla i permessi.
+
+- Legge i primi due byte del file. Se riconosce i caratteri #!, capisce che non è un file binario.
+
+- Il kernel analizza la prima riga, individua l'interprete e avvia quell'eseguibile, passandogli come argomento il percorso del file testuale originale.
+
+#### Esecuzione Semplificata: la funzione `system()`
+
+Quando si programma in C/C++ e si ha la necessità di far eseguire un comando esterno (un'utility di sistema o un altro programma) all'interno di un sotto-processo, l'approccio classico richiede l'uso combinato delle chiamate di sistema `fork()`, `exec()` e `waitpid()`.
+
+Per semplificare questa operazione per comandi basilari, la libreria standard offre la funzione `system()`.
+
+La funzione `system()` astrae la complessità della gestione dei processi. Quando viene chiamata, essa:
+
+- Effettua una `fork()` per creare un processo figlio.
+
+- Nel processo figlio, utilizza una funzione della famiglia `exec` per avviare una shell standard
+
+- Passa alla shell la stringa di comando richiesta.
+
+- Nel processo padre, esegue una `waitpid()` mettendosi in pausa finché la shell non ha terminato la sua esecuzione.
+```C
+#include <stdlib.h>
+
+int system(const char *cmdstring);
+```
+
+
+## Segnali
+I segnali sono notifiche asincrone e messaggi standard, privi di dati aggiuntivi, inviati a un processo o a un thread in esecuzione per scatenare comportamenti specifici. Possono essere generati dal sistema operativo per segnalare errori o eccezioni, dall'utente tramite combinazioni da terminale, o da altri programmi. Alla ricezione, il processo interrompe istantaneamente il suo flusso di esecuzione per reagire: può accettare l'azione di default, ignorare il segnale, oppure gestirlo intercettandolo tramite una procedura dedicata chiamata Signal Handler. Spesso vengono usati per la gestione degli errori o per comandare la chiusura di un'applicazione, offrendo opzioni che vanno dalla terminazione "gentile" e controllata (come SIGTERM, che permette al programma di pulire le risorse) all'uccisione forzata del processo (come SIGKILL, che non può mai essere ignorato).
+segnali principali che portano alla terminazione ma possono essere ignorati o gestiti:
+- hangup(SIGHUP): perdita del terminale locale/remoto
+- interrupt(SIGINT): interruzione interattiva da terminale (CTRL+C)
+- termination(SIGTERM): richiesta di terminazione
+
+Segnali prinicpali che portano inevitabilmente alla terminazione:
+- kill(SIGKILL): interruzione forzata
+- illegal instruction(SIGILL), segment. violation(SIGSEGV), … : errori fatali
+
+Segnali che possono essere ignorati:
+- child death(SIGCHLD): figlio terminato
+
+### Invio dei Segnali
+```C
+#include <signla.h>
+
+int kill(pid_t pid, int sig);
+int raise(int sig);
+```
+`kill()` può essere usata per mandare un qualsiasi segnale a un gruppo di processi o a un processo.
+Se `pid` è positivo il segnale `sig` verrà mandato al processo con il `pid` specificato.
+Se `pid` è uguale a zero, il segnale verrà mandato a ogni processo nel gruppo di porcessi del programma chiamante.
+Se `pid` è uguale a `-1`, allora il segnale verrà mandato a tutti i processi a cui il programma avrà i permessi per mandare segnali(fatta eccezione di `init`).
+Se `pid` è minore di `-1` il segnale verrà mandato a tutti i processi nel gruppo di processi il cui ID sarà uguale a `-pid`
+
+`raise()` manda un segnale al processo o thread chiamante.
+
+
+## POSIX Thread
+I POSIX Thread, comunemente noti anche come Pthread, rappresentano un elemento fondamentale nella programmazione concorrente poiché forniscono un'interfaccia standardizzata e universale che permette agli sviluppatori di interagire in modo uniforme e portabile con le innumerevoli implementazioni del multithreading disponibili sui diversi sistemi operativi POSIX compatibili, come le varie distribuzioni Linux o macOS. Un concetto cardine nella gestione di questa architettura è l'identificativo assegnato a ogni singolo thread, il quale è rigorosamente definito dal tipo di dato `pthread_t`, un tipo opaco che nella maggior parte delle implementazioni si traduce in un numero intero non negativo. Tuttavia, è di cruciale importanza comprendere che tale identificativo garantisce la propria univocità esclusivamente all'interno del ristretto contesto del processo contenitore che lo ha generato, non avendo dunque alcuna validità o garanzia di unicità assoluta a livello globale dell'intero sistema operativo (due processi diversi potrebbero potenzialmente avere thread con lo stesso `pthread_t`). Inoltre, il significato tecnico e la reale rappresentazione in memoria di questo identificativo sono fortemente specifici e dipendenti dalla piattaforma hardware e software sottostante. Proprio a causa di questa forte dipendenza dalla piattaforma e per prevenire errori critici legati alla portabilità del codice, la manipolazione, l'ispezione e il confronto di questi identificativi non dovrebbero mai avvenire in modo diretto tramite operatori logici standard (come l'operatore di uguaglianza `==`), ma richiedono un rigoroso incapsulamento che si realizza obbligatoriamente attraverso l'utilizzo di apposite funzioni elementari fornite dall'API di libreria (come ad esempio `pthread_equal` per confrontare due thread o `pthread_self` per ottenere l'ID del thread corrente), garantendo così che il codice rimanga sicuro e funzionante a prescindere dall'architettura su cui verrà compilato ed eseguito.
+
+```C
+#include <pthread.h>
+pthread_t pthread_self(pvoid); 
+int pthread_equal(pthread_t tid1, pthread_t tid2); 
+```
+Oltre a includere `pthread.h` nel codice bisogna fare il linking alla apposita libreria
+```bash
+gcc -l pthread -o eseguibile sorgente.c
+```
+
+### Creazione Thread
+```C
+int pthread_create(pthread_t *restrict thread, const pthread_attr_t *restrict attr, typeof(void *(void *)) *start_routine, void *restrict arg);
+```
+
+`pthread_create` crea un nuovo thread che eseguirà la funzione `start_routine` con argomento `arg`.
+La funzione dovrà avere prototipo:
+```C
+void *func(void *argomento){...}
+```
+`attr` punta a una struttura i cui contenuti sono usati al momento della creazione del thread. Se `attr` è `NULL` il thread verrà creato con attributi di default. Il thread process ID(**TPID**) verrà messo `thread`. 
+Lo stack per la funzione verrà creato automaticamente.
+
+Ritorna `0` in caso di successo, il codice d'errore (`>0`) altrimenti(standard per le funzioni pthrad che non usano `errno`).
+
+[Esempio Prof](./Esempi/thread-ids.c)
+
+### Coordinamento semplice tra thread
+```C
+void pthread_exit(void *retval);
+```
+Termina il thread chiamante, il valore di ritorno del thread verrà passato nella variabile `retval` che sarà disponibile ad un altro thread dello stesso processo che chiamerà `pthread_join()`
+
+```C
+int pthread_join(pthread_t thread, void **retval);
+```
+`pthread_join` attende la terminazione di uno specifico thread e la return value del thread appena terminato sarà disponibile in `retval`.
+[Esempio 1 Prof](./Esempi/multi-thread-join.c)<br>
+[Esempio 2 Prof](./Esempi/thread-memory-glitch.c)
+
+### Dati condivisi e race conditions
+I thread di un processo condividono virtualmente tutti i dati, tuttavia bisogna rispettare lo scoping imposto dal linguaggio. 
+Per condividere dati tra thread si possono usare:
+- Variabili globali: NO! NO! NO! Se vuoi sopravvivere non usarle!! Sei ancora in tempo per cambiare idea! Se pensi sia una buona idea non dirlo ad alta voce
+- L'unico argomento per riferirsi al dato condiviso: Funziona con un solo dato
+- Incapsulare i dati in una struttura(Attenzione alle race conditions)
+[Esempio Prof](./Esempi/thread-conc-problem.c)
+
+TO DO: da slide 46
