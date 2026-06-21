@@ -662,3 +662,37 @@ pid_t fork(void);
 
 `fork()` crea un nuovo processo duplicando il processo chiamante. Il nuovo processo sarà chiamato processo figlio e il processo chiamante verrà detto processo padre.
 La funzione ritorna il PID del figlio al processo padre e nel figlio ritorna `0`. In caso di errore ritorna `-1`.
+Esempi Prof:
+- [1](./Esempi/fork.c)
+- [2](./Esempi/fork-buffer-glitch.c)
+- [3](./Esempi/multi-fork.c)
+
+Il processo padre e quello figlio condividono le voci della tabella globale dei
+file aperti e quindi i flag di apertura e i file offset.
+![alt text](image-1.png)
+
+## Coordinameto tra processi
+
+```C
+pid_t wait(int *_Nullable wstatus);
+pid_t waitpid(pid_t pid, int *_Nullable wstatus, int options);
+```
+Queste chiamate di sistema serovno ad aspettare un cambio di stato in un figlio del processo chiamante, e ad ottenere informazioni suk figlio il cui stato è cambiato. Sono considerati cambi di stato: il figlio è terminato, il figlio è stato fermato da un segnale o il figlio è stato fatto ripartire da un segnale.
+In caso in cui il figlio sia già terninato effettuare un `wait` permette al sistema di liberare le risorse del figlio, altrimenti il figlio terminato rimarrà in uno stato "**zombie**".
+
+La funzione `wait()` sospende l'esecuzione del processo fino a quando uno dei suoi figki non termina l'esecuzione, è equivalente a `waitpid(-1, &wstatus, 0);`
+
+Il valore di `pid` può essere:
+- `< -1`: aspetta per qualsiasi processo con `grpid = |pid|`
+- `-1`: aspetta per ogni processo figlio
+- `0`: aspetta un figlio qualsiasi appartenente allo stesso process group del padre.
+- `>0`: `pid` del figlio che si vuole aspettare
+
+Il valore `options` è un `OR` di zero o più dei seguenti elementi(Il professore dice di ignorare questa parte, quindi nei codici verrà sempre posta a `0`(So che nell'esempio ne ha usato uno)):
+- `WNOHANG`: ritorna immediatamente se nessun figlio ha terminato
+- `WUNTRACED`: ritorna anceh su un figlio si ferma
+- `WCONTINUED`: continua anche se un figlio ricomincia pe run segnale `SIGCONT`
+- ...
+
+Ritorna `-1` in caso di fallimento, altrimenti il `PID` del figlio.<br>
+[Esempio Prof](./Esempi/multi-fork-with-wait.c)
