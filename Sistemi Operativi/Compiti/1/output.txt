@@ -1,0 +1,106 @@
+./file-size ~/.config /etc ~/.local/share ~/.cache /var/log >output.txt
+[D-1] scansione della cartella '/home/raffaele/.config'
+[D-1] trovato il file 'trashrc' in '/home/raffaele/.config'
+[D-1] trovato il file 'kdeglobals' in '/home/raffaele/.config'
+[D-1] trovato il file 'baloofileinformationrc' in '/home/raffaele/.config'
+[D-1] trovato il file 'ktrashrc' in '/home/raffaele/.config'
+[D-1] trovato il file 'dolphinrc' in '/home/raffaele/.config'
+[D-1] trovato il file 'kiorc' in '/home/raffaele/.config'
+[D-1] trovato il file 'kservicemenurc' in '/home/raffaele/.config'
+[D-3] scansione della cartella '/home/raffaele/.local/share'
+[D-2] scansione della cartella '/etc'
+[D-3] trovato il file 'user-places.xbel.tbcache' in '/home/raffaele/.local/share'
+[D-3] trovato il file 'user-places.xbel.bak' in '/home/raffaele/.local/share'
+[D-3] trovato il file 'user-places.xbel' in '/home/raffaele/.local/share'
+[D-3] trovato il file 'recently-used.xbel' in '/home/raffaele/.local/share'
+[D-4] scansione della cartella '/home/raffaele/.cache'
+[D-2] trovato il file '.pwd.lock' in '/etc'
+[D-4] trovato il file 'ksycoca6_en_eOZPLI6Hbs6MRjbk47ci5325SzE=' in '/home/raffaele/.cache'
+[STAT] il file '/home/raffaele/.config/trashrc' ha dimensione 20 byte
+[D-5] scansione della cartella '/var/log'
+[STAT] il file '/home/raffaele/.config/kdeglobals' ha dimensione 103 byte
+[MAIN] con il file '/home/raffaele/.config/trashrc' il totale parziale è di 20 byte
+[D-2] trovato il file 'subuid' in '/etc'
+[D-5] trovato il file 'btmp' in '/var/log'
+[D-5] trovato il file 'lastlog' in '/var/log'
+[STAT] il file '/home/raffaele/.config/baloofileinformationrc' ha dimensione 623 byte
+[MAIN] con il file '/home/raffaele/.config/kdeglobals' il totale parziale è di 123 byte
+[STAT] il file '/home/raffaele/.config/ktrashrc' ha dimensione 112 byte
+[MAIN] con il file '/home/raffaele/.config/baloofileinformationrc' il totale parziale è di 746 byte
+[D-2] trovato il file 'passwd' in '/etc'
+[STAT] il file '/home/raffaele/.config/dolphinrc' ha dimensione 583 byte
+[MAIN] con il file '/home/raffaele/.config/ktrashrc' il totale parziale è di 858 byte
+[D-4] trovato il file 'ksycoca6_en_Gn9Wnt77padWNE2cwptUQZXPadQ=' in '/home/raffaele/.cache'
+[D-4] trovato il file 'ksycoca6_en_bY7ZG_12pp8pZL176OuMAA+zij4=' in '/home/raffaele/.cache'
+[STAT] il file '/home/raffaele/.config/kiorc' ha dimensione 127 byte
+[MAIN] con il file '/home/raffaele/.config/dolphinrc' il totale parziale è di 1441 byte
+[MAIN] con il file '/home/raffaele/.config/kiorc' il totale parziale è di 1568 byte
+[STAT] il file '/home/raffaele/.config/kservicemenurc' ha dimensione 135 byte
+[STAT] il file '/home/raffaele/.local/share/user-places.xbel.tbcache' ha dimensione 0 byte
+[MAIN] con il file '/home/raffaele/.config/kservicemenurc' il totale parziale è di 1703 byte
+[D-5] trovato il file 'wtmp' in '/var/log'
+[MAIN] con il file '/home/raffaele/.local/share/user-places.xbel.tbcache' il totale parziale è di 1703 byte
+[STAT] il file '/home/raffaele/.local/share/user-places.xbel.bak' ha dimensione 1974 byte
+[D-2] trovato il file 'NIXOS' in '/etc'
+[MAIN] con il file '/home/raffaele/.local/share/user-places.xbel.bak' il totale parziale è di 3677 byte
+[STAT] il file '/home/raffaele/.local/share/user-places.xbel' ha dimensione 2811 byte
+[MAIN] con il file '/home/raffaele/.local/share/user-places.xbel' il totale parziale è di 6488 byte
+[STAT] il file '/home/raffaele/.local/share/recently-used.xbel' ha dimensione 11367 byte
+[D-2] trovato il file 'resolv.conf' in '/etc'
+[MAIN] con il file '/home/raffaele/.local/share/recently-used.xbel' il totale parziale è di 17855 byte
+[STAT] il file '/etc/.pwd.lock' ha dimensione 0 byte
+[D-2] trovato il file '.updated' in '/etc'
+[MAIN] con il file '/etc/.pwd.lock' il totale parziale è di 17855 byte
+[STAT] il file '/var/log/btmp' ha dimensione 0 byte
+[D-2] trovato il file 'machine-id' in '/etc'
+[D-2] trovato il file 'resolv.conf.bak' in '/etc'
+[STAT] il file '/etc/subuid' ha dimensione 22 byte
+[MAIN] con il file '/var/log/btmp' il totale parziale è di 17855 byte
+[MAIN] con il file '/etc/subuid' il totale parziale è di 17877 byte
+[STAT] il file '/home/raffaele/.cache/ksycoca6_en_eOZPLI6Hbs6MRjbk47ci5325SzE=' ha dimensione 250075 byte
+[D-2] trovato il file 'group' in '/etc'
+[STAT] il file '/home/raffaele/.cache/ksycoca6_en_Gn9Wnt77padWNE2cwptUQZXPadQ=' ha dimensione 250075 byte
+[D-2] trovato il file 'shadow-' in '/etc'
+[MAIN] con il file '/home/raffaele/.cache/ksycoca6_en_eOZPLI6Hbs6MRjbk47ci5325SzE=' il totale parziale è di 267952 byte
+[STAT] il file '/home/raffaele/.cache/ksycoca6_en_bY7ZG_12pp8pZL176OuMAA+zij4=' ha dimensione 252043 byte
+[D-2] trovato il file 'adjtime' in '/etc'
+[MAIN] con il file '/home/raffaele/.cache/ksycoca6_en_Gn9Wnt77padWNE2cwptUQZXPadQ=' il totale parziale è di 518027 byte
+[STAT] il file '/var/log/lastlog' ha dimensione 292292 byte
+[MAIN] con il file '/home/raffaele/.cache/ksycoca6_en_bY7ZG_12pp8pZL176OuMAA+zij4=' il totale parziale è di 770070 byte
+[D-2] trovato il file 'shadow' in '/etc'
+[STAT] il file '/etc/passwd' ha dimensione 3776 byte
+[MAIN] con il file '/var/log/lastlog' il totale parziale è di 1062362 byte
+[D-2] trovato il file 'sudoers' in '/etc'
+[STAT] il file '/var/log/wtmp' ha dimensione 245376 byte
+[D-2] trovato il file '.clean' in '/etc'
+[MAIN] con il file '/etc/passwd' il totale parziale è di 1066138 byte
+[STAT] il file '/etc/NIXOS' ha dimensione 0 byte
+[MAIN] con il file '/var/log/wtmp' il totale parziale è di 1311514 byte
+[D-2] trovato il file 'passwd-' in '/etc'
+[STAT] il file '/etc/resolv.conf' ha dimensione 80 byte
+[MAIN] con il file '/etc/NIXOS' il totale parziale è di 1311514 byte
+[D-2] trovato il file 'subgid' in '/etc'
+[STAT] il file '/etc/.updated' ha dimensione 208 byte
+[MAIN] con il file '/etc/resolv.conf' il totale parziale è di 1311594 byte
+[STAT] il file '/etc/machine-id' ha dimensione 33 byte
+[MAIN] con il file '/etc/.updated' il totale parziale è di 1311802 byte
+[STAT] il file '/etc/resolv.conf.bak' ha dimensione 0 byte
+[MAIN] con il file '/etc/machine-id' il totale parziale è di 1311835 byte
+[STAT] il file '/etc/group' ha dimensione 855 byte
+[MAIN] con il file '/etc/resolv.conf.bak' il totale parziale è di 1311835 byte
+[STAT] il file '/etc/shadow-' ha dimensione 952 byte
+[MAIN] con il file '/etc/group' il totale parziale è di 1312690 byte
+[STAT] il file '/etc/adjtime' ha dimensione 44 byte
+[MAIN] con il file '/etc/shadow-' il totale parziale è di 1313642 byte
+[STAT] il file '/etc/shadow' ha dimensione 1028 byte
+[MAIN] con il file '/etc/adjtime' il totale parziale è di 1313686 byte
+[STAT] il file '/etc/sudoers' ha dimensione 348 byte
+[MAIN] con il file '/etc/shadow' il totale parziale è di 1314714 byte
+[STAT] il file '/etc/.clean' ha dimensione 23 byte
+[MAIN] con il file '/etc/sudoers' il totale parziale è di 1315062 byte
+[STAT] il file '/etc/passwd-' ha dimensione 3776 byte
+[MAIN] con il file '/etc/.clean' il totale parziale è di 1315085 byte
+[STAT] il file '/etc/subgid' ha dimensione 22 byte
+[MAIN] con il file '/etc/passwd-' il totale parziale è di 1318861 byte
+[MAIN] con il file '/etc/subgid' il totale parziale è di 1318883 byte
+[MAIN] il totale finale è di 1318883 byte
