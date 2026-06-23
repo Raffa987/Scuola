@@ -839,4 +839,226 @@ Per condividere dati tra thread si possono usare:
 - Incapsulare i dati in una struttura(Attenzione alle race conditions)
 [Esempio Prof](./Esempi/thread-conc-problem.c)
 
-TO DO: da slide 46
+## Meccanismi di Mutua Esclusione e Coordinamento
+### Mutex Lock
+Un Mutex è un meccanismo di sincronizzazione fornito dal sistema operativo, utilizzato nella programmazione multithread per proteggere le sezioni critiche del codice. Una sezione critica è una porzione di codice in cui uno o più thread accedono o modificano una risorsa condivisa (es. variabili globali, file, strutture dati).
+
+Il Mutex garantisce la mutua esclusione: assicura che un solo thread alla volta possa eseguire la sezione critica. Se un thread tenta di acquisire un lock già detenuto da un altro, verrà sospeso dallo scheduler finché il lock non torna disponibile. Questo meccanismo è fondamentale per prevenire le race condition, che generano comportamenti e risultati imprevedibili.
+
+Il tipo di dato fondamentale è la struttura `pthread_mutex_t`, che deve essere condivisa (es. tramite variabile globale o passaggio per puntatore) tra tutti i thread che necessitano di sincronizzazione.
+
+
+1. Inizializzazione (`pthread_mutex_init`)
+
+- Dinamica: 
+  ```C
+  int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr);
+  ```
+  Inizializza la struttura a run-time. Il parametro `attr` permette di specificare attributi avanzati; passando `NULL` si applicano i comportamenti di default.
+
+- Statica: 
+  Per i mutex allocati staticamente o globalmente, è preferibile utilizzare la macro predefinita:<br>
+  `pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;`
+
+2. Acquisizione del Lock
+
+- Bloccante (`pthread_mutex_lock`): 
+  ```C
+  int pthread_mutex_lock(pthread_mutex_t *mutex);
+  ```
+  Il thread richiede l'accesso esclusivo. Se il mutex è libero, il thread lo blocca e prosegue. Se è occupato, il thread entra in stato di attesa (sospeso) e non consuma cicli di CPU finché non viene risvegliato al rilascio del lock.
+
+- Non Bloccante (`pthread_mutex_trylock`): 
+  ```C
+  int pthread_mutex_trylock(pthread_mutex_t *mutex);
+  ```
+  Tenta di acquisire il lock. Se è libero, ha successo. Se è occupato, non blocca il thread, ma ritorna immediatamente il codice di errore `EBUSY`. È utile per evitare deadlock o per permettere al thread di eseguire altre operazioni nel frattempo.
+
+3. Rilascio del Lock (`pthread_mutex_unlock`)
+    ```C
+    int pthread_mutex_unlock(pthread_mutex_t *mutex);
+    ```
+    Il thread che detiene il lock lo rilascia al termine della sezione critica. Se ci sono altri thread in coda bloccati su questo mutex, lo scheduler ne risveglierà uno permettendogli di acquisire il lock a sua volta.
+
+4. Distruzione (`pthread_mutex_destroy`)
+    ```C
+    int pthread_mutex_destroy(pthread_mutex_t *mutex);
+    ```
+    Libera le risorse di sistema allocate per il mutex. Deve essere invocato solo ed esclusivamente quando il mutex è sbloccato e nessun thread lo sta utilizzando o tenterà di utilizzarlo in futuro.
+
+### Semafori Numerici
+Un semaforo numerico (o counting semaphore) è un meccanismo di sincronizzazione basato su una variabile intera non negativa. A differenza dei mutex (che sono binari: o bloccato o sbloccato), un semaforo numerico viene utilizzato per gestire l'accesso concorrente a un pool di risorse finite. Il valore del semaforo rappresenta il numero esatto di risorse attualmente disponibili.
+
+Per implementarli bisogna includere la libreria `<semaphore.h>`, il tipo di dato fondamentale è la struttura `sem_t`
+
+1. Inizializzazione (`sem_init`)
+    ```C
+    int sem_init(sem_t *sem, int pshared, unsigned int value);
+    ```
+    Inizializza il semaforo puntato da sem assegnandogli un valore iniziale pari a value.
+    Il parametro pshared definisce la visibilità del semaforo:
+  - `0` (`PTHREAD_PROCESS_PRIVATE`): Il semaforo è condiviso solo tra i thread dello stesso processo.
+
+  - `1` (o un valore non nullo, `PTHREAD_PROCESS_SHARED`): Il semaforo è allocato in memoria condivisa e può essere utilizzato per sincronizzare processi distinti.
+
+2. Acquisizione dell'accesso alla risorsa(`sem_wait` e `sem_trywait`)
+- ``` C
+  int sem_wait(sem_t *sem);
+  ``` 
+  Richiede l'accesso alla risorsa (operazione storicamente nota come P o Down).
+
+  - Se il valore del semaforo è `>0`, lo decrementa di `1` e il thread procede immediatamente.
+
+  - Se il valore è `0` (nessuna risorsa disponibile), il thread chiamante si blocca (sospeso dal sistema operativo) finché il valore non torna maggiore di zero.
+
+- ```C
+  int sem_trywait(sem_t *sem);
+  ```
+  Versione non bloccante di `sem_wait`. Se il semaforo è a `0`, invece di sospendere il thread, la funzione fallisce immediatamente restituendo un codice d'errore (tipicamente `EAGAIN`). Utile per il polling o per evitare deadlock in sezioni critiche complesse.
+
+3. Rilascio della risorsa(`sem_post`)
+    ```C
+    int sem_post(sem_t *sem);
+    ```
+    Rilascia la risorsa (operazione storicamente nota come V o Up). Incrementa il valore del semaforo di `1`. Se ci sono thread attualmente bloccati su una `sem_wait` per questo semaforo, il sistema operativo ne risveglia uno.
+
+4.  Distruzione(`sem_destroy`)
+    ```C
+    int sem_destroy(sem_t *sem);
+    ```
+    Dealloca le risorse di sistema associate al semaforo. Deve essere chiamato solo quando nessun thread è bloccato sul semaforo e quando questo non è più necessario.
+
+### Read-Write Lock
+Il Lock per Lettori/Scrittori (o Read-Write Lock) è un meccanismo di sincronizzazione per thread che ottimizza l'accesso a una risorsa condivisa quando le operazioni di lettura sono molto più frequenti rispetto a quelle di scrittura.
+
+A differenza di un normale Mutex, che garantisce sempre un accesso strettamente mutuamente esclusivo, il Read-Write Lock distingue tra due tipi di accesso, applicando le seguenti regole:
+
+- Lettura (Lock Condiviso): Più thread lettori possono acquisire il lock e leggere la risorsa           simultaneamente, a patto che nessun thread scrittore stia operando sulla risorsa.
+
+- Scrittura (Lock Esclusivo): Un solo thread scrittore può acquisire il lock alla volta. Quando uno scrittore ha il lock, nessun altro thread (né lettore né scrittore) può accedere alla risorsa.
+
+Questo approccio previene i colli di bottiglia causati dai Mutex tradizionali, in cui anche thread che devono solo leggere i dati finiscono per bloccarsi a vicenda inutilmente.
+La struttura dati di riferimento in ambiente POSIX è `pthread_rwlock_t`.
+
+1. Inizializzazione(`pthread_rwlock_init`)
+- Statica: 
+  Se il lock è dichiarato a livello globale, può essere inizializzato tramite la macro dedicata:
+  ```C
+  pthread_rwlock_t rwlock = PTHREAD_RWLOCK_INITIALIZER;
+  ```
+
+- Dinamica:  
+  Obbligatoria se il lock è allocato dinamicamente o se servono attributi specifici. Si utilizza la funzione:
+  ```C
+  int pthread_rwlock_init(pthread_rwlock_t *rwlock, const pthread_rwlockattr_t *attr);
+  ```
+2. Distruzione(`pthread_rwlock_destroy`)
+
+    Quando il lock non serve più, le risorse ad esso associate vanno liberate:
+    ```C
+    int pthread_rwlock_destroy(pthread_rwlock_t *rwlock);
+    ```
+3. Acquisizione del Lock (`pthread_rwlock_rdlock`)
+  - Lettura(Shared)
+    ```C
+    int pthread_rwlock_rdlock(pthread_rwlock_t *rwlock);
+    ```
+    Il thread si blocca solo se uno scrittore detiene attualmente il lock (o, in alcune implementazioni, se ci sono scrittori in attesa, per evitare la starvation degli scrittori).<br>
+  - Scrittura(Exclusive)
+    ```C
+    int pthread_rwlock_wrlock(pthread_rwlock_t *rwlock);
+    ```
+    Il thread si blocca se qualsiasi altro thread (lettore o scrittore) detiene il lock.<br>
+  - Non bloccante(try-lock)
+    ```C
+    int pthread_rwlock_tryrdlock(pthread_rwlock_t *rwlock);
+    int pthread_rwlock_trywrlock(pthread_rwlock_t *rwlock);
+    ```
+    Tentano di acquisire il lock. Se la risorsa è già occupata in modo incompatibile, non mettono il thread in attesa, ma ritornano immediatamente un codice di errore (generalmente `EBUSY`).
+4. Rilascio del Lock(`pthread_rwlock_unlock`)
+    ```C
+    int pthread_rwlock_unlock(pthread_rwlock_t *rwlock);
+    ```
+    Rilascia il lock precedentemente acquisito. È la stessa funzione sia che il lock fosse stato acquisito in lettura sia in scrittura.
+
+### Variabili Condizione dei Monitor (Pthreads)
+Le variabili condizione (Condition Variables) sono primitive di sincronizzazione utilizzate nella programmazione multithread per bloccare l'esecuzione di un thread fino a quando non si verifica un determinato evento o lo stato di una variabile condivisa non cambia.
+
+Lavorano sempre in congiunzione con un Mutex (Mutua Esclusione). Mentre il mutex serve a garantire l'accesso esclusivo ai dati condivisi, la variabile condizione serve a gestire le code di attesa dei thread che aspettano che i dati condivisi assumano un certo valore.
+
+La libreria di riferimento in C/C++ è `<pthread.h>` e la struttura dati che definisce una variabile condizione è `pthread_cond_t`.
+
+1. Inizializzazione(`pthread_cond_init`)
+    ```C
+    int pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t *attr);
+    ```
+    Inizializza una nuova variabile condizione in modo dinamico. Se la variabile è allocata staticamente, è possibile usare la macro `PTHREAD_COND_INITIALIZER`.
+
+2. Distruzione(`pthread_cond_destroy`)
+    ```C
+    int pthread_cond_destroy(pthread_cond_t *cond);
+    ```
+    Distrugge la variabile condizione, liberando le risorse associate. Non deve esserci nessun thread in attesa al momento della distruzione.
+
+3. Sospensione(`pthread_cond_wait`)
+    ```C
+    int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex);
+    ```
+    Sospende il thread chiamante. Deve essere chiamata solo se il thread ha già acquisito il mutex indicato. Questa funzione compie due operazioni in modo atomico: sblocca il mutex e mette il thread in attesa sulla coda della variabile condizione. Al risveglio, la funzione riacquisisce automaticamente il mutex prima di restituire il controllo al thread.
+4. Risveglio(`pthread_cond_signal` e `pthread_cond_broadcast`)
+    ```C
+    int pthread_cond_signal(pthread_cond_t *cond);
+    ```
+    Sblocca (risveglia) uno dei thread attualmente in attesa sulla variabile condizione. Se non ci sono thread in attesa, non fa nulla.
+    ```C
+    int pthread_cond_broadcast(pthread_cond_t *cond);
+    ```
+    Sblocca (risveglia) tutti i thread attualmente in attesa sulla variabile condizione.
+
+  5. Regole di Utilizzo
+
+  - Mutex sempre acquisito in anticipo: Le operazioni di attesa (`pthread_cond_wait`) devono essere effettuate all'interno di una sezione critica, ovvero dopo aver fatto il lock del mutex associato ai dati condivisi.
+
+  - Il ciclo while è obbligatorio: La condizione logica che determina se il thread deve bloccarsi o meno va valutata sempre all'interno di un ciclo `while`, e mai in una semplice istruzione if. Questo è necessario per due motivi:
+
+    - Risvegli spuri (Spurious wakeups): Il sistema operativo potrebbe risvegliare un thread anche se nessun altro thread ha inviato un segnale.
+
+    - Interferenze: Tra il momento in cui il thread viene risvegliato e il momento in cui riacquisisce effettivamente il mutex, un terzo thread potrebbe essersi inserito e aver modificato nuovamente la condizione rendendola falsa.
+
+### Barriere
+Una barriera è un costrutto di sincronizzazione che forza un gruppo di thread a fermare la propria esecuzione in un punto specifico del codice, attendendo che tutti gli altri thread del gruppo abbiano raggiunto quello stesso punto. Nessun thread può proseguire finché la soglia prestabilita non viene raggiunta.
+
+La libreria di riferimento in C/C++ è `<pthread.h>` e la struttura dati che definisce una variabile condizione è `pthread_barrier_t`.
+
+1. Inizializzazione(`pthread_barrier_init`)
+    ```C
+    int pthread_barrier_init(pthread_barrier_t *barrier, const pthread_barrierattr_t *attr, unsigned int count);
+    ```
+- `barrier`: puntatore alla struttura da inizializzare.
+
+- `attr`: puntatore agli attributi della barriera (solitamente NULL per i valori di default).
+
+- `count`: definisce la soglia, ovvero il numero esatto di thread che dovranno chiamare la wait per sbloccare la barriera.
+
+2. Sincronizzazione / Attesa (`pthread_barrier_wait`)
+
+    ```C
+    int pthread_barrier_wait(pthread_barrier_t *barrier);
+    ```
+
+    Rende il chiamante bloccato. Il thread entra in stato di sleep finché il numero totale di thread bloccati su questa specifica barriera non eguaglia il valore count definito nell'init. Quando l'ultimo thread chiama la wait, tutti i thread vengono risvegliati contemporaneamente.
+
+    Gestione dei Valori di Ritorno della wait:
+    Quando i thread si sbloccano, la funzione ritorna valori differenti per permettere la gestione della fase successiva:
+
+    - `0`: Ritornato a tutti i thread "normali" sbloccati.
+
+    - `PTHREAD_BARRIER_SERIAL_THREAD` (tipicamente -1): Ritornato a un solo thread all'interno del gruppo (scelto dal sistema in modo arbitrario). Questo permette di eleggere un thread "coordinatore" a costo zero.
+
+    - `>0`: Codice di errore.
+
+3. Distruzione (`pthread_barrier_destroy`)
+    ```C
+    int pthread_barrier_destroy(pthread_barrier_t *barrier);
+    ```
+    Libera le risorse allocate per la barriera. Va chiamata solo quando si è certi che nessun thread sia attualmente bloccato o in procinto di bloccarsi su di essa.
