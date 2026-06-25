@@ -2,36 +2,39 @@
 Per la preview `Ctrl+Shift+V`<br>
 Tutti gli ordinamenti verrano fatti in ordne crescente
 #### Bubble Sort
-Gli elementi "salgono" alla posizione corretta come fossero bolle
+Gli elementi adiacenti vengono scambiati se sono nell'ordine sbagliato, facendo "salire" gli elementi più grandi verso la fine dell'array a ogni iterazione.<br>
+Complessità asintotica: $O(n^2)$ nel caso pessimo e medio, $O(n)$ nel caso ottimo.
 ```C++
 #include <vector>
+#include <utility> // Per std::swap
 
 template<typename T>
-void BubbleSort(std::vecotr<T>& array){
+void BubbleSort(std::vector<T>& array) {
     int l = array.size();    
     bool swapped = true;
 
-    while(swapped){
+    while (swapped) {
         swapped = false;
         int new_l = 0;
 
-        for(int i = 0; i < l -1; i++){
-            if(array[i] > array[i + 1]){
-                swap(array, i);
+        for (int i = 0; i < l - 1; i++) {
+            if (array[i] > array[i + 1]) {
+                std::swap(array[i], array[i + 1]);
                 swapped = true;
 
-                //accorcia il ciclo in modo che non vado a rivisitare gli elementi già ordinati
+                // Accorcia il ciclo per non rivisitare gli elementi già ordinati
                 new_l = i + 1;
             }
-            l = new_l;
         }
+        l = new_l;
     }    
 }
 ```
 ---
 #### Insertion Sort
-Gli elementi vengono inseriti in un sotto array ordinato<br>
-Complessità O(n<sup>2</sup>)
+Gli elementi vengono inseriti uno ad uno all'interno di un sotto-array logicamente ordinato. Questa implementazione sfrutta la ricerca binaria per trovare il punto di inserimento.<br>
+
+Complessità asintotica: $O(n^2)$ nel caso pessimo e medio. Sebbene la ricerca binaria riduca il numero di confronti a $O(\log n)$, gli spostamenti in memoria (shift) richiedono comunque $O(n)$ per inserimento.
 ```C++
 #include <vector>
 
@@ -39,7 +42,7 @@ template<typename T>
 void BinaryInsertionSort(std::vector<T>& array) {
     int l = array.size();
 
-    for(int i = 1; i < l; i++) {
+    for (int i = 1; i < l; i++) {
         T key = array[i];
 
         int left = 0;
@@ -49,16 +52,16 @@ void BinaryInsertionSort(std::vector<T>& array) {
             int mid = left + (right - left) / 2;
             
             if (array[mid] > key) {
-                //Se l'elemento centrale è più grande, cerchiamo nella metà sinistra
+                // Se l'elemento centrale è più grande, cerchiamo nella metà sinistra
                 right = mid - 1;
             } else {
-                //Altrimenti cerchiamo nella metà destra
+                // Altrimenti cerchiamo nella metà destra
                 left = mid + 1;
             }
         }
         
-        //Alla fine di questo ciclo, 'left' conterrà l'indice esatto 
-        //in cui la nostra 'key' deve essere inserita.
+        // Alla fine di questo ciclo, 'left' conterrà l'indice esatto 
+        // in cui la nostra 'key' deve essere inserita.
 
         // Spostiamo tutti gli elementi da 'left' a 'i-1' di una posizione verso destra
         for (int j = i; j > left; j--) {
@@ -68,32 +71,33 @@ void BinaryInsertionSort(std::vector<T>& array) {
         array[left] = key;
     }
 }
-
 ```
 
 ---
 #### Selection Sort
-Seleziona l'elemnto minimo nell'array e lo mette al primo posto<br>
-Il secondo elemento più piccolo al secono posto...
+L'algoritmo seleziona l'elemento minimo nella porzione non ordinata dell'array e lo scambia con il primo elemento non ordinato.<br>
+Complessità asintotica: $O(n^2)$ in tutti i casi (ottimo, medio e pessimo), poiché esegue sempre la scansione completa della parte rimanente.
 ```C++
-#include <vecotr>
+#include <vector>
+#include <utility>
 
 template <typename T>
-
-void InsertionSort(std::vectore <T>& array){
+void SelectionSort(std::vector<T>& array) {
     int l = array.size();
-    int min;
 
-    for(int index = 0; index < l - 1; i++){
-        min = index;
+    for (int index = 0; index < l - 1; index++) {
+        int min_idx = index;
 
-        //ricerca il minimo
-        for(int i = index; i < l - 1; i++){
-            if(array[i] < array[min]){
-                min = i;
+        // Ricerca l'indice dell'elemento minimo
+        for (int i = index + 1; i < l; i++) {
+            if (array[i] < array[min_idx]) {
+                min_idx = i;
             }
+        }
 
-            swap(array, i);
+        // Esegue lo scambio solo se il minimo trovato non è già nella posizione corretta
+        if (min_idx != index) {
+            std::swap(array[index], array[min_idx]);
         }
     }
 }
@@ -101,26 +105,29 @@ void InsertionSort(std::vectore <T>& array){
 
 ---
 #### Merge Sort
-Algoritmo che usa il paradigma Divide Et Impera, opera ricorsivamente su array di lunghezza n/2
+Algoritmo che usa il paradigma Divide Et Impera, opera ricorsivamente dividendo l'array in due metà, ordinandole separatamente e fondendole insieme.<br>
+Complessità asintotica: $O(n \log n)$ nel caso ottimo, medio e pessimo.<br>
+Complessità spaziale: $O(n)$ per la necessità di allocare vettori temporanei durante la fusione.
 
 ```C++
 #include <vector>
 
 template <typename T>
-void MergeSortHelper(std::vector <T>& array, int left, int right){
-    if(left >= right) return;
+void MergeSortHelper(std::vector<T>& array, int left, int right) {
+    if (left >= right) return;
     
     int mid = left + (right - left) / 2;
     MergeSortHelper(array, left, mid);
     MergeSortHelper(array, mid + 1, right);
  
     int size = right - left + 1;
-    std::vector <T> tmp(size);
+    std::vector<T> tmp(size);
 
     int i = left;       
     int j = mid + 1;    
     int k = 0;          
 
+    // Fusione delle due metà ordinate
     while (i <= mid && j <= right) {
         if (array[i] <= array[j]) {
             tmp[k] = array[i];
@@ -132,6 +139,7 @@ void MergeSortHelper(std::vector <T>& array, int left, int right){
         k++;
     }
 
+    // Copia degli eventuali elementi rimanenti
     while (i <= mid) {
         tmp[k] = array[i];
         i++;
@@ -144,62 +152,63 @@ void MergeSortHelper(std::vector <T>& array, int left, int right){
         k++;
     }
 
+    // Copia del vettore temporaneo ordinato nell'array originale
     for (int idx = 0; idx < tmp.size(); idx++) {
         array[left + idx] = tmp[idx];
     }
 }
 
 template <typename T>
-void MergeSort(std::vector <T>& array){
-    if(array.empty()) return;
+void MergeSort(std::vector<T>& array) {
+    if (array.empty()) return;
     MergeSortHelper(array, 0, array.size() - 1);
 }
 ```
 
 ---
 #### Quick Sort
-Il  Quicksort  è  l’algoritmo  di  ordinamento  più  efficiente.  Si  basa sulla divisione del vettore in tre partizioni: <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Centrale: contenente un solo elemento detto pivot<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Sinistra: contenente tutti gli elementi minori del pivot<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Destra: contenente tutti gli elementi maggiori del pivot<br>
-Usa il partizionamento di Hoare
-
+Si basa sul Divide Et Impera e sul partizionamento in loco (in-place). Divide l'array in partizioni rispetto a un elemento detto pivot. In questa versione si usa il partizionamento di Hoare.<br>
+Complessità asintotica: $O(n \log n)$ nel caso ottimo e medio. Raggiunge $O(n^2)$ nel caso pessimo (quando l'array è già ordinato o ordinato in modo inverso, se non si mitiga la scelta del pivot).
 ```C++
 #include <vector>
+#include <utility>
 
 template <typename T>
-void QuickSort(std::vector <T>& array, int n){
-    QuickSort(array, 0, n - 1);
-}
-template <typename T>
-void QuickSort(std::vector <T>& v, int s, int d){
-    //s = sinistra, d = destra
-    int i = s, j = d;
-    T tmp;
-    //scegliamo l'elemento a metà come Pivot
+void QuickSortHelper(std::vector<T>& v, int s, int d) {
+    // s = sinistra, d = destra
+    int i = s;
+    int j = d;
+    
+    // Scegliamo l'elemento a metà come Pivot
     T pivot = v[(s + d) / 2];
 
-    //il ciclo continuerà fino a quando gli indici non arrivano al Pivot
-    while(i <= j){
-        //i aumenta fino a quando non incontar un elemento più grande del Pivot
-        while(v[i] < pivot) i++;
-        //j aumenta fino a quando non incontar un elemento più piccolo del Pivot
-        while(v[j] > pivot) j--;
+    // Il ciclo continuerà fino a quando gli indici non si incrociano
+    while (i <= j) {
+        // i aumenta fino a quando non incontra un elemento più grande o uguale al Pivot
+        while (v[i] < pivot) i++;
+        // j diminuisce fino a quando non incontra un elemento più piccolo o uguale al Pivot
+        while (v[j] > pivot) j--;
 
-        //se i e j non si sono ancora incontrati vengono scambiati di posto gli elementi
-        //da loro indicati
+        // Se i e j non si sono incrociati, scambiamo gli elementi
         if (i <= j) {
-            tmp = v[i];
-            v[i] = v[j];
-            v[j] = tmp;
+            std::swap(v[i], v[j]);
             i++;
             j--;
         }
     }
 
-    if(s < j)
-    QuickSort(v, s, j);
-    if(i < d)
-    QuickSort(v, i, d);
+    // Chiamate ricorsive per le due sotto-partizioni
+    if (s < j) {
+        QuickSortHelper(v, s, j);
+    }
+    if (i < d) {
+        QuickSortHelper(v, i, d);
+    }
+}
+
+template <typename T>
+void QuickSort(std::vector<T>& array) {
+    if (array.empty()) return;
+    QuickSortHelper(array, 0, array.size() - 1);
 }
 ```
