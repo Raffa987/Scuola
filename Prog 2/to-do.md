@@ -31,3 +31,6 @@ Ereditarietà(Livelli di accesso Costruttori e distruttori Polimorfismo: overrid
 Funzioni virtuali
 Classi astratte
 Template(Funzioni e Classi)
+
+
+Strutture dati(Liste, Code, Pile)
