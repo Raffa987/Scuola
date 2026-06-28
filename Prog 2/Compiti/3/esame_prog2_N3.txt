@@ -1,0 +1,32 @@
+Polinomi
+
+Realizzare programma che permetta di effettuare operazioni tra polinomi, sulla base delle seguenti Istruzioni.
+
+Un polinomio è una somma algebrica di più monomi. Un monomio è un'espressione costituita da un prodotto di 
+fattori letterali o numerici. Il grado di un polinomio è uguale al grado del suo monomio di grado più alto. 
+Il grado di un monomio è dato dalla somma degli esponenti delle lettere che lo compongono.
+
+Ad esempio, sono polinomi:
+2x^5 + 3x^2 + 1 → Grado 5
+x^6 + x^2 - 33 → Grado 6
+-5x^3 + x - 7 → Grado 3
+
+Per semplicità si assuma di dover gestire polinomi composti da una sola variabile, x. 
+Inoltre, si supponga di dover gestire polinomi con grado massimo pari a 5. Si ricorda, che la somma di due 
+polinomi è data dalla somma dei monomi simili, ovvero formati dalle stesse variabili con gli stessi esponenti. 
+Ad esempio, (2x^5 + 3x^2 + 1) + (x^6 + x^2 -33) ha come risultato il polinomio x^6 + 2x^5 + 4x^2 -32.
+
+Modellare un polinomio attraverso la definizione di una classe Polinomio. 
+La classe deve prevedere dei metodi che permettano di effettuare le seguenti operazioni:
+1.inizializzare tutti i coefficienti a zero;
+2.restituire il grado del polinomio;
+3.confrontare due polinomi per grado mediante l'operatore '>;
+4.stampare sullo standard output il polinomio;
+5.impostare il coefficiente per una determinata potenza;
+6.fare somme e sottrazioni tra polinomi, restituendo il risultato come un polinomio;
+
+Realizzare infine un main che crei alcuni polinomi (almeno 4) ed effettui somme e 
+sottrazioni tra i polinomi istanziati, visualizzandone il risultato. Verificare che i risultati 
+ottenuti siano esatti.
+Successivamente, inserire i polinomi creati in un array di polinomi e definire una funzione 
+che prende in input l'array e restituisce il polinomio di grado massimo.
